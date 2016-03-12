@@ -12,7 +12,7 @@ sparkPackageName := "databricks/spark-sql-perf"
 // All Spark Packages need a license
 licenses := Seq("Apache-2.0" -> url("http://opensource.org/licenses/Apache-2.0"))
 
-sparkVersion := "2.0.0-SNAPSHOT"
+sparkVersion := "1.6.0"
 
 sparkComponents ++= Seq("sql", "hive")
 
@@ -30,7 +30,7 @@ initialCommands in console :=
   """.stripMargin
 
 // TODO: remove after Spark 2.0.0 is released:
-resolvers += "apache-snapshots" at "https://repository.apache.org/snapshots/"
+// resolvers += "apache-snapshots" at "https://repository.apache.org/snapshots/"
 
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.5"
 
@@ -42,20 +42,20 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.1" % "test"
 
 fork := true
 
-// Your username to login to Databricks Cloud
-dbcUsername := sys.env.getOrElse("DBC_USERNAME", sys.error("Please set DBC_USERNAME"))
-
-// Your password (Can be set as an environment variable)
-dbcPassword := sys.env.getOrElse("DBC_PASSWORD", sys.error("Please set DBC_PASSWORD"))
-
-// The URL to the Databricks Cloud DB Api. Don't forget to set the port number to 34563!
-dbcApiUrl := sys.env.getOrElse ("DBC_URL", sys.error("Please set DBC_URL"))
-
-// Add any clusters that you would like to deploy your work to. e.g. "My Cluster"
-// or run dbcExecuteCommand
-dbcClusters += sys.env.getOrElse("DBC_USERNAME", sys.error("Please set DBC_USERNAME"))
-
-dbcLibraryPath := s"/Users/${sys.env.getOrElse("DBC_USERNAME", sys.error("Please set DBC_USERNAME"))}/lib"
+// // Your username to login to Databricks Cloud
+// dbcUsername := sys.env.getOrElse("DBC_USERNAME", sys.error("Please set DBC_USERNAME"))
+// 
+// // Your password (Can be set as an environment variable)
+// dbcPassword := sys.env.getOrElse("DBC_PASSWORD", sys.error("Please set DBC_PASSWORD"))
+// 
+// // The URL to the Databricks Cloud DB Api. Don't forget to set the port number to 34563!
+// dbcApiUrl := sys.env.getOrElse ("DBC_URL", sys.error("Please set DBC_URL"))
+// 
+// // Add any clusters that you would like to deploy your work to. e.g. "My Cluster"
+// // or run dbcExecuteCommand
+// dbcClusters += sys.env.getOrElse("DBC_USERNAME", sys.error("Please set DBC_USERNAME"))
+// 
+// dbcLibraryPath := s"/Users/${sys.env.getOrElse("DBC_USERNAME", sys.error("Please set DBC_USERNAME"))}/lib"
 
 val runBenchmark = inputKey[Unit]("runs a benchmark")
 

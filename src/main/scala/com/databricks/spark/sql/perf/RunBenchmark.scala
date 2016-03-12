@@ -22,13 +22,17 @@ import org.apache.spark.sql.SQLContext
 import org.apache.spark.sql.functions._
 import org.apache.spark.{SparkContext, SparkConf}
 
+import com.databricks.spark.sql.perf.tpcds.{Tables, TPCDS}
+
 import scala.util.Try
 
 case class RunConfig(
     benchmarkName: String = null,
     filter: Option[String] = None,
     iterations: Int = 3,
-    baseline: Option[Long] = None)
+    baseline: Option[Long] = None,
+    dsdgenDir: String = null,
+    scaleFactor: Int = 1)
 
 /**
  * Runs a benchmark locally and prints the results to the screen.
@@ -50,6 +54,12 @@ object RunBenchmark {
       opt[Long]('c', "compare")
           .action((x, c) => c.copy(baseline = Some(x)))
           .text("the timestamp of the baseline experiment to compare with")
+      opt[String]('p', "dsdgenDir")
+          .action((x, c) => c.copy(dsdgenDir = x))
+          .text("the local path of dsdgen")
+      opt[Int]('s', "scaleFactor")
+          .action((x, c) => c.copy(scaleFactor = x))
+          .text("the scale factor of dsdgen")
       help("help")
         .text("prints this usage text")
     }
@@ -64,7 +74,6 @@ object RunBenchmark {
 
   def run(config: RunConfig): Unit = {
     val conf = new SparkConf()
-        .setMaster("local[*]")
         .setAppName(getClass.getName)
 
     val sc = SparkContext.getOrCreate(conf)
@@ -72,31 +81,47 @@ object RunBenchmark {
     import sqlContext.implicits._
 
     sqlContext.setConf("spark.sql.perf.results", new java.io.File("performance").toURI.toString)
-    val benchmark = Try {
-      Class.forName(config.benchmarkName)
-          .newInstance()
-          .asInstanceOf[Benchmark]
-    } getOrElse {
-      Class.forName("com.databricks.spark.sql.perf." + config.benchmarkName)
-          .newInstance()
-          .asInstanceOf[Benchmark]
-    }
+    println("== frankfzw Generate Data ==")
+    val dsdgenDir = config.dsdgenDir
+    val scaleFactor = config.scaleFactor
+    val tables = new Tables(sqlContext, dsdgenDir, scaleFactor)
+    val location = "/mnt/tmp"
+    val format = "text"
+    val overwrite = false
+    val partitionTables = false
+    val useDoubleForDecimal = false
+    val clusterByPartitionColumns = false
+    val filterOutNullPartitionValues = true
+    tables.genData(location, format, overwrite, partitionTables, useDoubleForDecimal, clusterByPartitionColumns, filterOutNullPartitionValues)
+    tables.createTemporaryTables(location, format)
+    val benchmark = new TPCDS (sqlContext = sqlContext)
+    // val benchmark = Try {
+    //   Class.forName(config.benchmarkName)
+    //       .newInstance()
+    //       .asInstanceOf[Benchmark]
+    // } getOrElse {
+    //   Class.forName("com.databricks.spark.sql.perf." + config.benchmarkName)
+    //       .newInstance()
+    //       .asInstanceOf[Benchmark]
+    // }
 
-    val allQueries = config.filter.map { f =>
-      benchmark.allQueries.filter(_.name contains f)
-    } getOrElse {
-      benchmark.allQueries
-    }
+    // val allQueries = config.filter.map { f =>
+    //   benchmark.allQueries.filter(_.name contains f)
+    // } getOrElse {
+    //   benchmark.allQueries
+    // }
+    val allQueries = benchmark.interactiveQueries
 
     println("== QUERY LIST ==")
     allQueries.foreach(println)
 
-    val experiment = benchmark.runExperiment(
-      executionsToRun = allQueries,
-      iterations = config.iterations,
-      tags = Map(
-        "runtype" -> "local",
-        "host" -> InetAddress.getLocalHost().getHostName()))
+    // val experiment = benchmark.runExperiment(
+    //   executionsToRun = allQueries,
+    //   iterations = config.iterations,
+    //   tags = Map(
+    //     "runtype" -> "local",
+    //     "host" -> InetAddress.getLocalHost().getHostName()))
+    val experiment = benchmark.runExperiment(allQueries)
 
     println("== STARTING EXPERIMENT ==")
     experiment.waitForFinish(1000 * 60 * 30)
