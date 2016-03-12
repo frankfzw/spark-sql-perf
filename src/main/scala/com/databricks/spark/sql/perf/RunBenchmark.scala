@@ -32,7 +32,8 @@ case class RunConfig(
     iterations: Int = 3,
     baseline: Option[Long] = None,
     dsdgenDir: String = null,
-    scaleFactor: Int = 1)
+    scaleFactor: Int = 1,
+    format: String = "json")
 
 /**
  * Runs a benchmark locally and prints the results to the screen.
@@ -56,6 +57,9 @@ object RunBenchmark {
           .text("the timestamp of the baseline experiment to compare with")
       opt[String]('p', "dsdgenDir")
           .action((x, c) => c.copy(dsdgenDir = x))
+          .text("the local path of dsdgen")
+      opt[String]('r', "format")
+          .action((x, c) => c.copy(format = x))
           .text("the local path of dsdgen")
       opt[Int]('s', "scaleFactor")
           .action((x, c) => c.copy(scaleFactor = x))
@@ -86,7 +90,7 @@ object RunBenchmark {
     val scaleFactor = config.scaleFactor
     val tables = new Tables(sqlContext, dsdgenDir, scaleFactor)
     val location = "/mnt/tmp"
-    val format = "text"
+    val format = config.format
     val overwrite = false
     val partitionTables = false
     val useDoubleForDecimal = false
