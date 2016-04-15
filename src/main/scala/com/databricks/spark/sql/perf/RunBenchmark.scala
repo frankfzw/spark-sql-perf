@@ -89,9 +89,9 @@ object RunBenchmark {
     val dsdgenDir = config.dsdgenDir
     val scaleFactor = config.scaleFactor
     val tables = new Tables(sqlContext, dsdgenDir, scaleFactor)
-    val location = "/mnt/tmp"
+    val location = "hdfs:///mnt/tmp"
     val format = config.format
-    val overwrite = false
+    val overwrite = true
     val partitionTables = false
     val useDoubleForDecimal = false
     val clusterByPartitionColumns = false
