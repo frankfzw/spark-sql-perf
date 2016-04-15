@@ -114,7 +114,7 @@ object RunBenchmark {
     // } getOrElse {
     //   benchmark.allQueries
     // }
-    val allQueries = benchmark.interactiveQueries
+    val allQueries = benchmark.tpcds1_4Queries
 
     println("== QUERY LIST ==")
     allQueries.foreach(println)
