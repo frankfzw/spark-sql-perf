@@ -33,6 +33,7 @@ case class RunConfig(
     baseline: Option[Long] = None,
     dsdgenDir: String = null,
     scaleFactor: Int = 1,
+    genData: Boolean = true,
     format: String = "json")
 
 /**
@@ -64,6 +65,9 @@ object RunBenchmark {
       opt[Int]('s', "scaleFactor")
           .action((x, c) => c.copy(scaleFactor = x))
           .text("the scale factor of dsdgen")
+      opt[Boolean]('g', "genData")
+          .action((x, c) => c.copy(genData = x))
+          .text("set it true to genarate data before running benchmark")
       help("help")
         .text("prints this usage text")
     }
@@ -96,7 +100,10 @@ object RunBenchmark {
     val useDoubleForDecimal = false
     val clusterByPartitionColumns = false
     val filterOutNullPartitionValues = true
-    tables.genData(location, format, overwrite, partitionTables, useDoubleForDecimal, clusterByPartitionColumns, filterOutNullPartitionValues)
+    val genFlag = config.genData
+    if (genFlag)
+      tables.genData(location, format, overwrite, partitionTables, useDoubleForDecimal, clusterByPartitionColumns, filterOutNullPartitionValues)
+    println("== frankfzw Data has been generated ==")
     tables.createTemporaryTables(location, format)
     val benchmark = new TPCDS (sqlContext = sqlContext)
     // val benchmark = Try {
