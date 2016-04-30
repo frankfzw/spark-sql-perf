@@ -28,7 +28,7 @@ import scala.util.Try
 
 case class RunConfig(
     benchmarkName: String = null,
-    filter: Option[String] = None,
+    filter: String = "q1-v1.4",
     iterations: Int = 3,
     baseline: Option[Long] = None,
     dsdgenDir: String = null,
@@ -48,7 +48,7 @@ object RunBenchmark {
         .text("the name of the benchmark to run")
         .required()
       opt[String]('f', "filter")
-        .action((x, c) => c.copy(filter = Some(x)))
+        .action((x, c) => c.copy(filter = x))
         .text("a filter on the name of the queries to run")
       opt[Int]('i', "iterations")
         .action((x, c) => c.copy(iterations = x))
@@ -116,15 +116,20 @@ object RunBenchmark {
     //       .asInstanceOf[Benchmark]
     // }
 
-    // val allQueries = config.filter.map { f =>
-    //   benchmark.allQueries.filter(_.name contains f)
+    val blocks = Array("q64-v1.4", "q65-v1.4")
+
+    val allQueries = benchmark.tpcds1_4Queries.filter(q => q.name == config.filter)
+    // val allQueries = blocks.map { f =>
+    //   benchmark.tpcds1_4Queries.filter(_.name != f)
     // } getOrElse {
-    //   benchmark.allQueries
+    //   benchmark.tpcds1_4Queries
     // }
-    val allQueries = benchmark.tpcds1_4Queries
+    // val allQueries = benchmark.tpcds1_4Queries
 
     println("== QUERY LIST ==")
-    allQueries.foreach(println)
+    // allQueries.foreach(println)
+    for (q <- allQueries)
+      println(q.name)
 
     // val experiment = benchmark.runExperiment(
     //   executionsToRun = allQueries,

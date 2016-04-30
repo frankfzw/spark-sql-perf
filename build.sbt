@@ -7,6 +7,8 @@ organization := "com.databricks"
 
 scalaVersion := "2.10.4"
 
+test in assembly := {}
+
 sparkPackageName := "databricks/spark-sql-perf"
 
 // All Spark Packages need a license
@@ -86,8 +88,6 @@ lazy val setupDbcRelease = ReleaseStep(
  ********************/
 
 publishMavenStyle := true
-
-releaseCrossBuild := true
 
 licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
 
