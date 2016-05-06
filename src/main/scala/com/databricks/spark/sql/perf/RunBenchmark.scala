@@ -88,7 +88,7 @@ object RunBenchmark {
     val sqlContext = SQLContext.getOrCreate(sc)
     import sqlContext.implicits._
 
-    sqlContext.setConf("spark.sql.perf.results", new java.io.File("performance").toURI.toString)
+    sqlContext.setConf("spark.sql.perf.results", "hdfs:///performance/pipe")
     println("== frankfzw Generate Data ==")
     val dsdgenDir = config.dsdgenDir
     val scaleFactor = config.scaleFactor
@@ -116,9 +116,10 @@ object RunBenchmark {
     //       .asInstanceOf[Benchmark]
     // }
 
-    val blocks = Array("q64-v1.4", "q65-v1.4")
+    val blocks = Array("q64-v1.4", "q65-v1.4", "q66-v1.4", "q71-v1.4", "q74-v1.4", "q75-v1.4", "q76-v1.4", "q87-v1.4")
 
-    val allQueries = benchmark.tpcds1_4Queries.filter(q => q.name == config.filter)
+    val allQueries = benchmark.tpcds1_4Queries.filter(q => !blocks.contains(q.name))
+    // val allQueries = benchmark.tpcds1_4Queries.filter(q => q.name == config.filter)
     // val allQueries = blocks.map { f =>
     //   benchmark.tpcds1_4Queries.filter(_.name != f)
     // } getOrElse {
